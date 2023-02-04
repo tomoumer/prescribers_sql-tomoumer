@@ -80,6 +80,26 @@
 -- );
 
 --2d. **Difficult Bonus:** *Do not attempt until you have solved all other problems!* For each specialty, report the percentage of total claims by that specialty which are for opioids. Which specialties have a high percentage of opioids?
+-- a: dependign on what high is ... Case Manager/Care Coordinator, Orthopaedic Surgery, Interventional Pain Management, Anesthesiology, Pain Management, Hand Surgery, Surgical Oncology all have abouve 50%
+
+-- WITH claims_breakdown AS (
+-- SELECT specialty_description,
+-- 	CASE WHEN opioid_drug_flag = 'Y' THEN SUM(total_claim_count)
+-- 	ELSE 0 END AS total_opioid_claims,
+-- 	CASE WHEN opioid_drug_flag = 'N' THEN SUM(total_claim_count)
+-- 	ELSE 0 END AS total_other_claims
+-- FROM prescriber p1
+-- LEFT JOIN prescription p2
+-- ON p1.npi = p2.npi
+-- INNER JOIN (SELECT DISTINCT drug_name, opioid_drug_flag FROM drug) AS d
+-- on p2.drug_name = d.drug_name
+-- GROUP BY specialty_description, opioid_drug_flag
+-- )
+-- SELECT specialty_description,
+-- 	ROUND(100.0* SUM(total_opioid_claims) / (SUM(total_opioid_claims) + SUM(total_other_claims)),1) AS percentage_opioid_claims
+-- FROM claims_breakdown
+-- GROUP BY specialty_description
+-- ORDER BY percentage_opioid_claims DESC;
 
 -- 3a. Which drug (generic_name) had the highest total drug cost?
 -- a: BEXAROTENE $2106640.59
@@ -220,14 +240,80 @@
 
 -- 7c. Finally, if you have not done so already, fill in any missing values for total_claim_count with 0. Hint - Google the COALESCE function.
 
-SELECT p1.npi,
-		d.drug_name,
-		COALESCE(SUM(total_claim_count), 0) AS sum_claims
-FROM prescriber p1
-CROSS JOIN drug d
-LEFT JOIN prescription p2
-ON d.drug_name = p2.drug_name
-WHERE specialty_description = 'Pain Management'
-	AND nppes_provider_city = 'NASHVILLE'
-	AND opioid_drug_flag = 'Y'
-GROUP BY p1.npi, d.drug_name;
+-- SELECT p1.npi,
+-- 		d.drug_name,
+-- 		COALESCE(SUM(total_claim_count), 0) AS sum_claims
+-- FROM prescriber p1
+-- CROSS JOIN drug d
+-- LEFT JOIN prescription p2
+-- ON d.drug_name = p2.drug_name
+-- WHERE specialty_description = 'Pain Management'
+-- 	AND nppes_provider_city = 'NASHVILLE'
+-- 	AND opioid_drug_flag = 'Y'
+-- GROUP BY p1.npi, d.drug_name;
+
+-- ====== PART 2
+
+-- 1. How many npi numbers appear in the prescriber table but not in the prescription table?
+-- a: 4458
+
+-- SELECT COUNT(npi)
+-- FROM prescriber
+-- WHERE npi NOT IN
+-- 	(SELECT DISTINCT npi
+-- 	FROM prescription); 
+
+-- 2a. Find the top five drugs (generic_name) prescribed by prescribers with the specialty of Family Practice.
+
+-- SELECT generic_name, SUM(total_claim_count) AS total_claims
+-- FROM prescriber p1
+-- LEFT JOIN prescription p2
+-- ON p1.npi = p2.npi
+-- LEFT JOIN drug d
+-- ON p2.drug_name = d.drug_name
+-- WHERE specialty_description = 'Family Practice'
+-- 	AND generic_name IS NOT NULL
+-- GROUP BY d.generic_name
+-- ORDER BY total_claims DESC
+-- LIMIT 5;
+
+-- 2b. Find the top five drugs (generic_name) prescribed by prescribers with the specialty of Cardiology.
+
+-- SELECT generic_name, SUM(total_claim_count) AS total_claims
+-- FROM prescriber p1
+-- LEFT JOIN prescription p2
+-- ON p1.npi = p2.npi
+-- LEFT JOIN drug d
+-- ON p2.drug_name = d.drug_name
+-- WHERE specialty_description = 'Cardiology'
+-- 	AND generic_name IS NOT NULL
+-- GROUP BY d.generic_name
+-- ORDER BY total_claims DESC
+-- LIMIT 5;
+
+-- 2c. Which drugs appear in the top five prescribed for both Family Practice prescribers and Cardiologists? Combine what you did for parts a and b into a single query to answer this question.
+-- a: ATORVASTATIN CALCIUM and AMLODIPINE BESYLATE
+
+-- (SELECT generic_name
+-- FROM prescriber p1
+-- LEFT JOIN prescription p2
+-- ON p1.npi = p2.npi
+-- LEFT JOIN drug d
+-- ON p2.drug_name = d.drug_name
+-- WHERE specialty_description = 'Family Practice'
+-- 	AND generic_name IS NOT NULL
+-- GROUP BY d.generic_name
+-- ORDER BY SUM(total_claim_count) DESC
+-- LIMIT 5)
+-- INTERSECT
+-- (SELECT generic_name
+-- FROM prescriber p1
+-- LEFT JOIN prescription p2
+-- ON p1.npi = p2.npi
+-- LEFT JOIN drug d
+-- ON p2.drug_name = d.drug_name
+-- WHERE specialty_description = 'Cardiology'
+-- 	AND generic_name IS NOT NULL
+-- GROUP BY d.generic_name
+-- ORDER BY SUM(total_claim_count) DESC
+-- LIMIT 5);
