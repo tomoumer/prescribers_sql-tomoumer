@@ -456,3 +456,49 @@ ORDER BY Percent DESC;
 -- LEFT JOIN fips_county
 -- USING(fipscounty)
 -- ORDER BY perc_population DESC
+
+
+-- ====== Bonus Grouping Sets
+
+-- 1. Write a query which returns the total number of claims for these two groups (Interventional Pain Management & Pain Management).
+
+-- SELECT
+-- 	specialty_description,
+-- 	SUM(total_claim_count) AS total_claims
+-- FROM prescriber
+-- INNER JOIN prescription
+-- USING(npi)
+-- WHERE specialty_description IN ('Interventional Pain Management', 'Pain Management')
+-- GROUP BY specialty_description
+
+
+-- 2. Now, let's say that we want our output to also include the total number of claims between these two groups. Combine two queries with the UNION keyword to accomplish this.
+
+-- (SELECT
+--  Null AS specialty_description,
+--  SUM(total_claim_count) AS total_claims
+-- FROM prescriber
+-- INNER JOIN prescription
+-- USING(npi)
+-- WHERE specialty_description IN ('Interventional Pain Management', 'Pain Management')
+-- )
+-- UNION
+-- (SELECT
+-- 	specialty_description,
+-- 	SUM(total_claim_count) AS total_claims
+-- FROM prescriber
+-- INNER JOIN prescription
+-- USING(npi)
+-- WHERE specialty_description IN ('Interventional Pain Management', 'Pain Management')
+-- GROUP BY specialty_description);
+
+-- 3. Now, instead of using UNION, make use of GROUPING SETS (https://www.postgresql.org/docs/10/queries-table-expressions.html#QUERIES-GROUPING-SETS) to achieve the same output.
+
+-- SELECT
+-- 	specialty_description,
+-- 	SUM(total_claim_count) AS total_claims
+-- FROM prescriber
+-- INNER JOIN prescription
+-- USING(npi)
+-- WHERE specialty_description IN ('Interventional Pain Management', 'Pain Management')
+-- GROUP BY GROUPING SETS ((specialty_description), ());
