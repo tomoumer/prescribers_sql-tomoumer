@@ -165,10 +165,12 @@ ORDER BY Percent DESC;
 
 -- SELECT
 -- 	drug_name,
--- 	CASE WHEN opioid_drug_flag = 'Y' THEN 'opioid'
--- 	WHEN antibiotic_drug_flag = 'Y' THEN 'antibiotic'
--- 	ELSE 'neither' END AS drug_type
--- FROM drug
+-- 	CASE
+-- 		WHEN opioid_drug_flag = 'Y' THEN 'opioid'
+-- 		WHEN antibiotic_drug_flag = 'Y' THEN 'antibiotic'
+-- 		ELSE 'neither' END AS drug_type
+-- FROM drug;
+
 
 -- 4b. Building off of the query you wrote for part a, determine whether more was spent (total_drug_cost) on opioids or on antibiotics. Hint: Format the total costs as MONEY for easier comparision.
 -- a: opioids almost double the spending than antibiotics
@@ -182,27 +184,28 @@ ORDER BY Percent DESC;
 -- 	 OR antibiotic_drug_flag = 'Y'
 -- )
 -- SELECT
--- 	CASE WHEN opioid_drug_flag = 'Y' THEN 'opioid'
--- 	WHEN antibiotic_drug_flag = 'Y' THEN 'antibiotic'
--- 	ELSE 'neither' END AS drug_type,
+-- 	CASE 
+-- 		WHEN opioid_drug_flag = 'Y' THEN 'opioid'
+-- 		WHEN antibiotic_drug_flag = 'Y' THEN 'antibiotic'
+-- 		ELSE 'neither' END AS drug_type,
 -- 	SUM(total_drug_cost)::MONEY AS overall_drug_spending
 -- FROM prescription p
 -- LEFT JOIN distinct_drugs
 -- ON p.drug_name = distinct_drugs.drug_name
 -- GROUP BY drug_type;
 
-
 -- 5a. How many CBSAs are in Tennessee? **Warning:** The cbsa table contains information for all states, not just Tennessee.
 -- a: 10 distinct cbsa over 33 fipscounty
 
--- SELECT DISTINCT cbsa, cbsaname
+-- SELECT COUNT(DISTINCT cbsa)
 -- FROM cbsa
 -- WHERE cbsaname LIKE '%TN%'
 
 -- 5b. Which cbsa has the largest combined population? Which has the smallest? Report the CBSA name and total population.
 -- a: largest Nashville-Davidson--Murfreesboro--Franklin, smallest Morristown
 
--- SELECT cbsaname,
+-- SELECT 
+-- 	cbsaname,
 -- 	SUM(population) as total_population
 -- FROM cbsa AS cb
 -- LEFT JOIN population as p
@@ -261,7 +264,7 @@ ORDER BY Percent DESC;
 
 -- 7. The goal of this exercise is to generate a full list of all pain management specialists in Nashville and the number of claims they had for each opioid. **Hint:** The results from all 3 parts will have 637 rows.
 
--- 7a. First, create a list of all npi/drug_name combinations for pain management specialists (specialty_description = 'Pain Managment') in the city of Nashville (nppes_provider_city = 'NASHVILLE'), where the drug is an opioid (opiod_drug_flag = 'Y'). **Warning:** Double-check your query before running it. You will only need to use the prescriber and drug tables since you don't need the claims numbers yet.
+-- 7a. First, create a list of all npi/drug_name combinations for pain management specialists (specialty_description = 'Pain Management') in the city of Nashville (nppes_provider_city = 'NASHVILLE'), where the drug is an opioid (opiod_drug_flag = 'Y'). **Warning:** Double-check your query before running it. You will only need to use the prescriber and drug tables since you don't need the claims numbers yet.
 
 -- SELECT npi, drug_name
 -- FROM prescriber p1
@@ -286,6 +289,7 @@ ORDER BY Percent DESC;
 -- GROUP BY p1.npi, d.drug_name;
 
 -- 7c. Finally, if you have not done so already, fill in any missing values for total_claim_count with 0. Hint - Google the COALESCE function.
+-- NOTE: the SUM that I used is actually superfluous given how the table is constructed!
 
 -- SELECT p1.npi,
 -- 		d.drug_name,
@@ -439,7 +443,18 @@ ORDER BY Percent DESC;
 -- LIMIT 5)
 
 -- 4. Find all counties which had an above-average (for the state) number of overdose deaths in 2017. Report the county name and number of overdose deaths.
--- can't do it, missing table!
+-- table was originally missing - Michael sent it to me as a .csv
+
+-- SELECT
+-- 	od.overdose_deaths, 
+-- 	fp.county
+-- FROM overdose_deaths AS od
+-- LEFT JOIN fips_county AS fp
+-- USING(fipscounty)
+-- WHERE year = 2017
+-- 	AND overdose_deaths > (SELECT AVG(overdose_deaths)
+-- 							FROM overdose_deaths
+-- 							WHERE year=2017);
 
 --5a. Write a query that finds the total population of Tennessee.
 
