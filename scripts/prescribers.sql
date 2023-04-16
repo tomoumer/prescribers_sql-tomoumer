@@ -3,7 +3,9 @@
 -- 1a. Which prescriber had the highest total number of claims (totaled over all drugs)? Report the npi and the total number of claims.
 -- a: npi, 1881634483, BRUCE PENDLEY, M.D., family practice, 358 prescriptions, 99707 total claims
 
--- SELECT npi, SUM(total_claim_count) AS total_claims
+-- SELECT 
+-- 	npi,
+-- 	SUM(total_claim_count) AS total_claims
 -- FROM prescription
 -- GROUP BY npi
 -- ORDER BY total_claims DESC
@@ -13,13 +15,16 @@
 -- a: below:
 
 -- WITH sum_claims AS (
--- SELECT npi, SUM(total_claim_count) AS total_claims
--- FROM prescription
--- GROUP BY npi
--- ORDER BY total_claims DESC
--- LIMIT 5
+-- 	SELECT
+-- 		npi,
+-- 		SUM(total_claim_count) AS total_claims
+-- 	FROM prescription
+-- 	GROUP BY npi
+-- 	ORDER BY total_claims DESC
+-- 	LIMIT 5
 -- )
--- SELECT sum_claims.npi,
+-- SELECT
+-- 	sum_claims.npi,
 -- 	nppes_provider_first_name AS first_name,
 -- 	nppes_provider_last_org_name AS last_name,
 -- 	specialty_description,
@@ -29,8 +34,9 @@
 -- ON sum_claims.npi = p.npi
 -- ORDER BY total_claims DESC;
 
--- also possible, Michael's code, grouping together various parts:
-/*SELECT 
+
+/* also possible alternative, Michael's code, grouping together various parts:
+SELECT 
 	nppes_provider_first_name AS first_name,
 	nppes_provider_last_org_name AS last_name,
 	specialty_description,
@@ -42,7 +48,7 @@ GROUP BY npi, first_name, last_name, specialty_description
 ORDER BY total_claims DESC;*/
 
 --2a. Which specialty had the most total number of claims (totaled over all drugs)?
--- Family Practice is at the top with 9,752,347 claims!
+-- a: Family Practice is at the top with 9,752,347 claims!
 
 -- SELECT 
 -- 	specialty_description,
@@ -55,10 +61,12 @@ ORDER BY total_claims DESC;*/
 -- LIMIT 5;
 
 --2b. Which specialty had the most total number of claims for opioids?
--- a: Nurse Practitioner is the real drug dealer! with 900,845 total opioid claims
+-- a: Nurse Practitioner with 900,845 total opioid claims
+-- NOTE: doing this exercise it was found out that actually, some generic_drug names have been mislabelled (meaning, two drug_names have both a flag for YES and NO!!)
 
 -- WITH unique_drugs AS (
--- SELECT DISTINCT drug_name,
+-- SELECT DISTINCT
+-- 	drug_name,
 -- 	opioid_drug_flag
 -- FROM drug
 -- )
@@ -74,8 +82,6 @@ ORDER BY total_claims DESC;*/
 -- GROUP BY specialty_description
 -- ORDER BY total_claims DESC
 -- LIMIT 5;
-
--- doing this it was found out that actually, some generic_drug names have been mislabelled (meaning, two drug_names have both a flag for YES and NO!!)
 
 --2c. **Challenge Question:** Are there any specialties that appear in the prescriber table that have no associated prescriptions in the prescription table?
 -- a: yes, 15 of them, see below
@@ -101,7 +107,8 @@ ORDER BY total_claims DESC;*/
 -- 	opioid_drug_flag
 -- FROM drug
 -- )
--- SELECT specialty_description,
+-- SELECT
+--	specialty_description,
 -- 	SUM(CASE WHEN opioid_drug_flag = 'Y' THEN total_claim_count ELSE 0 END) AS total_opioid_claims,
 -- 	SUM(CASE WHEN opioid_drug_flag = 'N' THEN total_claim_count ELSE 0 END)
 -- 	 AS total_other_claims,
@@ -115,7 +122,7 @@ ORDER BY total_claims DESC;*/
 -- ORDER BY percentage_opioid_claims DESC NULLS LAST;
 
 
-/* Alison's code:
+/* classmate Alison's code for an alternative, using subqueries:
 SELECT t1.specialty_description, t1.total_opioid_claim, t2.total_specialty, ROUND(t1.total_opioid_claim * 100.0 / t2.total_specialty, 1) AS Percent
 FROM 
   (SELECT specialty_description, SUM(total_claim_count) AS total_opioid_claim
@@ -176,9 +183,10 @@ ORDER BY Percent DESC;
 -- a: opioids almost double the spending than antibiotics
 
 -- WITH distinct_drugs AS (
--- SELECT DISTINCT drug_name,
--- opioid_drug_flag,
--- antibiotic_drug_flag
+-- SELECT DISTINCT
+-- 	drug_name,
+-- 	opioid_drug_flag,
+-- 	antibiotic_drug_flag
 -- FROM drug
 -- WHERE opioid_drug_flag = 'Y'
 -- 	 OR antibiotic_drug_flag = 'Y'
@@ -217,7 +225,9 @@ ORDER BY Percent DESC;
 -- 5c. What is the largest (in terms of population) county which is not included in a CBSA? Report the county name and population.
 -- a: SEVIER county, 95523 
 
--- SELECT county, population
+-- SELECT
+-- 	county,
+-- 	population
 -- FROM population
 -- FULL JOIN cbsa
 -- USING(fipscounty)
@@ -230,7 +240,9 @@ ORDER BY Percent DESC;
 -- 6a. Find all rows in the prescription table where total_claims is at least 3000. Report the drug_name and the total_claim_count.
 -- a: 9 of them
 
--- SELECT drug_name, total_claim_count
+-- SELECT
+-- 	drug_name,
+-- 	total_claim_count
 -- FROM prescription
 -- WHERE total_claim_count >= 3000;
 
@@ -266,7 +278,9 @@ ORDER BY Percent DESC;
 
 -- 7a. First, create a list of all npi/drug_name combinations for pain management specialists (specialty_description = 'Pain Management') in the city of Nashville (nppes_provider_city = 'NASHVILLE'), where the drug is an opioid (opiod_drug_flag = 'Y'). **Warning:** Double-check your query before running it. You will only need to use the prescriber and drug tables since you don't need the claims numbers yet.
 
--- SELECT npi, drug_name
+-- SELECT
+-- 	npi,
+-- 	drug_name
 -- FROM prescriber p1
 -- CROSS JOIN drug d
 -- WHERE specialty_description = 'Pain Management'
@@ -308,7 +322,8 @@ ORDER BY Percent DESC;
 -- 1. How many npi numbers appear in the prescriber table but not in the prescription table?
 -- a: 4458
 
--- SELECT COUNT(npi)
+-- SELECT
+--	COUNT(npi)
 -- FROM prescriber
 -- WHERE npi NOT IN
 -- 	(SELECT DISTINCT npi
@@ -316,7 +331,9 @@ ORDER BY Percent DESC;
 
 -- 2a. Find the top five drugs (generic_name) prescribed by prescribers with the specialty of Family Practice.
 
--- SELECT generic_name, SUM(total_claim_count) AS total_claims
+-- SELECT
+--	generic_name,
+--	SUM(total_claim_count) AS total_claims
 -- FROM prescriber p1
 -- LEFT JOIN prescription p2
 -- ON p1.npi = p2.npi
@@ -330,7 +347,9 @@ ORDER BY Percent DESC;
 
 -- 2b. Find the top five drugs (generic_name) prescribed by prescribers with the specialty of Cardiology.
 
--- SELECT generic_name, SUM(total_claim_count) AS total_claims
+-- SELECT
+--	generic_name,
+--	SUM(total_claim_count) AS total_claims
 -- FROM prescriber p1
 -- LEFT JOIN prescription p2
 -- ON p1.npi = p2.npi
@@ -372,7 +391,8 @@ ORDER BY Percent DESC;
 -- 3. Your goal in this question is to generate a list of the top prescribers in each of the major metropolitan areas of Tennessee.
 -- 3a. First, write a query that finds the top 5 prescribers in Nashville in terms of the total number of claims (total_claim_count) across all drugs. Report the npi, the total number of claims, and include a column showing the city.
 
--- SELECT npi,
+-- SELECT
+--	npi,
 -- 	nppes_provider_city,
 -- 	SUM(total_claim_count) AS total_claims
 -- FROM prescriber AS p1
@@ -385,7 +405,8 @@ ORDER BY Percent DESC;
 
 -- 3b. Now, report the same for Memphis.
 
--- SELECT npi,
+-- SELECT 
+--	npi,
 -- 	nppes_provider_city,
 -- 	SUM(total_claim_count) AS total_claims
 -- FROM prescriber AS p1
@@ -443,7 +464,7 @@ ORDER BY Percent DESC;
 -- LIMIT 5)
 
 -- 4. Find all counties which had an above-average (for the state) number of overdose deaths in 2017. Report the county name and number of overdose deaths.
--- table was originally missing - Michael sent it to me as a .csv
+-- (note: table was originally missing - Michael sent it to me as a .csv to add)
 
 -- SELECT
 -- 	od.overdose_deaths, 
